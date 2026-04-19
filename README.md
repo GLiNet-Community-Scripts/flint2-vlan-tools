@@ -22,11 +22,11 @@ Tested on firmware **4.8.x** (OpenWrt 21.02-SNAPSHOT).
 
 ## Installation
 
-Copy `install-vlan-clients.sh` to the router and run it:
+Copy `vlan-clients-dashboard.sh` to the router and run it:
 
 ```sh
-scp install-vlan-clients.sh root@192.168.8.1:/root/
-ssh root@192.168.8.1 "sh /root/install-vlan-clients.sh"
+scp vlan-clients-dashboard.sh root@192.168.8.1:/root/
+ssh root@192.168.8.1 "sh /root/vlan-clients-dashboard.sh"
 ```
 
 Then open LuCI → **Network → VLAN Clients**.
@@ -48,7 +48,7 @@ Then open LuCI → **Network → VLAN Clients**.
 
 ## Backup
 
-By default, LuCI backups only include UCI config files. Run this once on the router to add the dashboard files to the backup list — after that they are automatically included every time you create a backup:
+By default, LuCI and GL.iNet backups only include UCI config files. Run this once on the router to add the dashboard files to the backup list — after that they are automatically included every time you create a backup:
 
 ```sh
 cat >> /etc/sysupgrade.conf << 'EOF'
