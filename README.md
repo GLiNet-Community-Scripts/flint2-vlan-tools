@@ -29,7 +29,7 @@ scp vlan-clients-dashboard.sh root@192.168.8.1:/root/
 ssh root@192.168.8.1 "sh /root/vlan-clients-dashboard.sh"
 ```
 
-Then open LuCI → **Network → VLAN Clients**.
+Then open LuCI - **Network - VLAN Clients**.
 
 > Log out and back in if the menu item does not appear.
 
@@ -48,8 +48,8 @@ Then open LuCI → **Network → VLAN Clients**.
 
 ## Backup
 
-By default, LuCI and GL.iNet backups only include UCI config files. Run this once on the router to add the dashboard files to the backup list — after that they are automatically included every time you create a backup:
-
+By default, LuCI and GL.iNet backups only include UCI config files. Run this once on the router to add the dashboard files to the backup list - after that they are automatically included every time you create a backup:
+    
 ```sh
 cat >> /etc/sysupgrade.conf << 'EOF'
 /etc/vlan-client-labels
