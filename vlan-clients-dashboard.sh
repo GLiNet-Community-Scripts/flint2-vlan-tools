@@ -1,6 +1,6 @@
 #!/bin/sh
 # LuCI VLAN Clients - Modern JS-based LuCI view
-# Usage: sh install-vlan-clients.sh
+# Usage: sh vlan-clients-dashboard.sh
 
 set -e
 
