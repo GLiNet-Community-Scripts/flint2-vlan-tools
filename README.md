@@ -1,5 +1,7 @@
 # LuCI VLAN Clients Dashboard
 
+> **Disclaimer:** This script was developed with the assistance of AI. It has been tested on the hardware listed below, but use it at your own risk. **Always take a backup before making any changes to your router.**
+
 A modern JavaScript LuCI view for **GL.iNet Flint 2 (MT6000)** that shows all connected clients grouped by VLAN interface.
 
 Tested on firmware **4.8.x** (OpenWrt 21.02-SNAPSHOT).
