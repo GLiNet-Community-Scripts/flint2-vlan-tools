@@ -117,7 +117,7 @@ function serializeLabels(labels) {
         .join('\n') + '\n';
 }
 
-/* Bygger en karta: 'br-lan.20' → 'iot', 'br-lan.1' → 'lan', osv */
+/* Builds a map: 'br-lan.20' → 'iot', 'br-lan.1' → 'lan', etc. */
 function parseNetworkNames(raw) {
     var map = {};
     var cur = null;
