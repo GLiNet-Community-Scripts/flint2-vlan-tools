@@ -415,7 +415,7 @@ return view.extend({
                   [_('No VLAN bridge interfaces found in ARP table.')])
             ]);
 
-        /* ── toolbar: sökruta + VLAN-filter-pills ── */
+        /* ── toolbar: searchbox + VLAN-filter-pills ── */
         var searchEl = E('input', {
             type: 'search',
             placeholder: _('Search hostname, IP, MAC…'),
