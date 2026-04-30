@@ -1,6 +1,6 @@
 #!/bin/sh
 # LuCI VLAN Clients - Modern JS-based LuCI view
-# Usage: sh vlan-clients-dashboard.sh
+# Usage: sh install-vlan-clients.sh
 
 set -e
 
@@ -117,7 +117,7 @@ function serializeLabels(labels) {
         .join('\n') + '\n';
 }
 
-/* Builds a map: 'br-lan.20' → 'iot', 'br-lan.1' → 'lan', etc. */
+/* Bygger en karta: 'br-lan.20' → 'iot', 'br-lan.1' → 'lan', osv */
 function parseNetworkNames(raw) {
     var map = {};
     var cur = null;
@@ -136,6 +136,42 @@ function ipToNum(ip) {
     return (ip || '0.0.0.0').split('.').reduce(function(a, b) {
         return (a << 8) + parseInt(b || 0, 10);
     }, 0) >>> 0;
+}
+
+/* ── Theme-aware styles ─────────────────────────────────────────────────── */
+
+var DARK_VARS =
+    '--vc-stripe:rgba(255,255,255,.05);--vc-muted:#bbb;--vc-sub:#777;' +
+    '--vc-accent:#fff;--vc-border:#444;--vc-input-bg:#2d2d2d;' +
+    '--vc-input-color:#ddd;--vc-input-border:#555;--vc-btn-bg:#3a3a3a;' +
+    '--vc-btn-border:#666;--vc-del-bg:#3a1818;--vc-del-border:#a44;' +
+    '--vc-del-color:#f88;--vc-edit-bg:#2e2e2e;--vc-edit-border:#555;' +
+    '--vc-edit-color:#777;--vc-pill-off-bg:#2e2e2e;--vc-pill-off-border:#555;' +
+    '--vc-pill-off-color:#888;--vc-mac:#aaa;--vc-footer:#666';
+
+function injectStyles() {
+    if (document.getElementById('vc-style')) return;
+    var s = document.createElement('style');
+    s.id = 'vc-style';
+    s.textContent =
+        ':root{--vc-stripe:#f8f8f8;--vc-muted:#555;--vc-sub:#aaa;' +
+        '--vc-accent:#1a3566;--vc-border:#ddd;--vc-input-bg:#fff;' +
+        '--vc-input-color:inherit;--vc-input-border:#ccc;--vc-btn-bg:#eee;' +
+        '--vc-btn-border:#aaa;--vc-del-bg:#fff4f4;--vc-del-border:#e88;' +
+        '--vc-del-color:#c00;--vc-edit-bg:#fff;--vc-edit-border:#ccc;' +
+        '--vc-edit-color:#999;--vc-pill-off-bg:#f5f5f5;--vc-pill-off-border:#ccc;' +
+        '--vc-pill-off-color:#888;--vc-mac:#555;--vc-footer:#999}' +
+        '@media(prefers-color-scheme:dark){:root{' + DARK_VARS + '}}' +
+        'html.vc-dark{' + DARK_VARS + '}';
+    document.head.appendChild(s);
+    /* Detect dark themes that don't use prefers-color-scheme (e.g. luci-theme-bootstrap-dark) */
+    requestAnimationFrame(function() {
+        var bg = getComputedStyle(document.body).backgroundColor;
+        var m = bg.match(/\d+/g);
+        if (m && m.length >= 3 &&
+            (0.299*parseInt(m[0]) + 0.587*parseInt(m[1]) + 0.114*parseInt(m[2])) < 100)
+            document.documentElement.classList.add('vc-dark');
+    });
 }
 
 /* ── View ───────────────────────────────────────────────────────────────── */
@@ -196,7 +232,7 @@ return view.extend({
         });
 
         rows.forEach(function(r, i) {
-            r.style.background = i % 2 ? '#f8f8f8' : '';
+            r.style.background = i % 2 ? 'var(--vc-stripe)' : '';
             tbody.appendChild(r);
         });
     },
@@ -223,12 +259,12 @@ return view.extend({
 
         /* primary text — no bold, label in blue, plain otherwise */
         var primaryDiv = E('div', {
-            style: 'font-size:1em;color:' + (isLabelled ? '#1a3566' : '#555')
+            style: 'font-size:1em;color:' + (isLabelled ? 'var(--vc-accent)' : 'var(--vc-muted)')
         }, [primary]);
 
         /* hostname sub-text shown below label (no bold, muted) */
         var hnDiv = (isLabelled && hn)
-            ? E('div', { style: 'font-size:.82em;color:#aaa;margin-top:2px' }, [hn])
+            ? E('div', { style: 'font-size:.82em;color:var(--vc-sub);margin-top:2px' }, [hn])
             : null;
 
         /* collapsible edit / add form */
@@ -237,14 +273,15 @@ return view.extend({
             value: label,
             placeholder: _('Label…'),
             maxlength: 64,
-            style: 'width:140px;padding:3px 7px;border:1px solid #ccc;' +
-                   'border-radius:3px;font-size:.85em'
+            style: 'width:140px;padding:3px 7px;border:1px solid var(--vc-input-border);' +
+                   'border-radius:3px;font-size:.85em;' +
+                   'background:var(--vc-input-bg);color:var(--vc-input-color)'
         });
 
         var formChildren = [inputEl,
             E('button', {
                 style: 'padding:3px 10px;font-size:.82em;cursor:pointer;' +
-                       'border:1px solid #aaa;border-radius:3px;background:#eee;white-space:nowrap',
+                       'border:1px solid var(--vc-btn-border);border-radius:3px;background:var(--vc-btn-bg);white-space:nowrap',
                 click: function(ev) {
                     ev.preventDefault();
                     self.saveLabel(c.mac, inputEl.value, labelsRaw);
@@ -255,7 +292,7 @@ return view.extend({
         if (isLabelled)
             formChildren.push(E('button', {
                 style: 'padding:3px 10px;font-size:.82em;cursor:pointer;white-space:nowrap;' +
-                       'border:1px solid #e88;border-radius:3px;background:#fff4f4;color:#c00',
+                       'border:1px solid var(--vc-del-border);border-radius:3px;background:var(--vc-del-bg);color:var(--vc-del-color)',
                 click: function(ev) {
                     ev.preventDefault();
                     self.removeLabel(c.mac, labelsRaw);
@@ -270,9 +307,9 @@ return view.extend({
         var iconBtn = E('button', {
             class: 'vc-edit-btn',
             style: 'width:22px;height:22px;padding:0;flex-shrink:0;' +
-                   'border:1.5px solid #ccc;border-radius:5px;' +
-                   'background:#fff;cursor:pointer;opacity:0;' +
-                   'font-size:13px;line-height:1;color:#999;' +
+                   'border:1.5px solid var(--vc-edit-border);border-radius:5px;' +
+                   'background:var(--vc-edit-bg);cursor:pointer;opacity:0;' +
+                   'font-size:13px;line-height:1;color:var(--vc-edit-color);' +
                    'display:inline-flex;align-items:center;justify-content:center;' +
                    'transition:opacity .12s,border-color .12s,color .12s',
             title: isLabelled ? _('Edit label') : _('Add label'),
@@ -332,12 +369,12 @@ return view.extend({
 
         var rows = filtered.map(function(c, i) {
             return E('tr', {
-                style: i % 2 ? 'background:#f8f8f8' : ''
+                style: i % 2 ? 'background:var(--vc-stripe)' : ''
             }, [
                 self.mkDeviceCell(c, leases, labelsRaw),
                 E('td', { style: 'padding:12px 16px;vertical-align:middle;width:20%;font-size:1em' }, [c.ip]),
                 E('td', { style: 'padding:12px 16px;vertical-align:middle;width:35%;' +
-                                 'font-family:monospace;font-size:.95em;color:#555' }, [c.mac])
+                                 'font-family:monospace;font-size:.95em;color:var(--vc-mac)' }, [c.mac])
             ]);
         });
 
@@ -379,7 +416,7 @@ return view.extend({
 
         var details = E('details', {}, [
             summary,
-            E('div', { style: 'border:1px solid #ddd;border-top:none;' +
+            E('div', { style: 'border:1px solid var(--vc-border);border-top:none;' +
                                'border-radius:0 0 4px 4px;overflow:hidden;' +
                                'box-shadow:0 1px 4px rgba(0,0,0,.12)' }, [table])
         ]);
@@ -397,6 +434,8 @@ return view.extend({
     },
 
     render: function(data) {
+        injectStyles();
+
         var arpRaw    = data[0];
         var leasesRaw = data[1];
         var labelsRaw = data[2];
@@ -411,16 +450,17 @@ return view.extend({
         if (ifaces.length === 0)
             return E('div', {}, [
                 E('h2', {}, [_('VLAN Clients')]),
-                E('p', { style: 'color:#999;font-style:italic' },
+                E('p', { style: 'color:var(--vc-footer);font-style:italic' },
                   [_('No VLAN bridge interfaces found in ARP table.')])
             ]);
 
-        /* ── toolbar: searchbox + VLAN-filter-pills ── */
+        /* ── toolbar: sökruta + VLAN-filter-pills ── */
         var searchEl = E('input', {
             type: 'search',
             placeholder: _('Search hostname, IP, MAC…'),
-            style: 'padding:6px 10px;border:1px solid #ccc;border-radius:5px;' +
-                   'font-size:.9em;width:220px;outline:none'
+            style: 'padding:6px 10px;border:1px solid var(--vc-input-border);border-radius:5px;' +
+                   'font-size:.9em;width:220px;outline:none;' +
+                   'background:var(--vc-input-bg);color:var(--vc-input-color)'
         });
 
         /* active-set: which VLANs are shown (default all) */
@@ -451,17 +491,17 @@ return view.extend({
             var friendly  = netNames[iface] || iface;
             var pill = E('button', {
                 style: 'padding:4px 12px;border-radius:20px;font-size:.82em;cursor:pointer;' +
-                       'border:1.5px solid ' + (active ? '#383838' : '#ccc') + ';' +
-                       'background:' + (active ? '#383838' : '#f5f5f5') + ';' +
-                       'color:' + (active ? '#fff' : '#888') + ';' +
+                       'border:1.5px solid ' + (active ? '#383838' : 'var(--vc-pill-off-border)') + ';' +
+                       'background:' + (active ? '#383838' : 'var(--vc-pill-off-bg)') + ';' +
+                       'color:' + (active ? '#fff' : 'var(--vc-pill-off-color)') + ';' +
                        'transition:all .15s;white-space:nowrap',
                 click: function() {
                     hidden[iface] = !hidden[iface];
                     localStorage.setItem('vc-hidden', JSON.stringify(hidden));
                     var on = !hidden[iface];
-                    pill.style.background    = on ? '#383838' : '#f5f5f5';
-                    pill.style.borderColor   = on ? '#383838' : '#ccc';
-                    pill.style.color         = on ? '#fff'    : '#888';
+                    pill.style.background    = on ? '#383838' : 'var(--vc-pill-off-bg)';
+                    pill.style.borderColor   = on ? '#383838' : 'var(--vc-pill-off-border)';
+                    pill.style.color         = on ? '#fff'    : 'var(--vc-pill-off-color)';
                     rebuildSections();
                 }
             }, [friendly + ' (' + byIface[iface].length + ')']);
@@ -473,7 +513,7 @@ return view.extend({
         }, [searchEl].concat(pills).concat([
             E('a', {
                 href: '#',
-                style: 'margin-left:auto;font-size:.82em;color:#888;text-decoration:none',
+                style: 'margin-left:auto;font-size:.82em;color:var(--vc-sub);text-decoration:none',
                 click: function(ev) { ev.preventDefault(); location.reload(); }
             }, [_('↺ Refresh')])
         ]));
@@ -484,7 +524,7 @@ return view.extend({
             E('h2', {}, [_('VLAN Clients')]),
             toolbar,
             sectionsEl,
-            E('p', { style: 'font-size:.78em;color:#ccc;margin-top:.5em' }, [
+            E('p', { style: 'font-size:.78em;color:var(--vc-footer);margin-top:.5em' }, [
                 _('Source: ARP table + DHCP leases. Labels in /etc/vlan-client-labels.')
             ])
         ]);
