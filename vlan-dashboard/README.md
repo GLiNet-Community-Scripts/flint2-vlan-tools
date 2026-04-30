@@ -26,7 +26,7 @@ Copy `vlan-clients-dashboard.sh` to the router and run it:
 
 ```sh
 scp vlan-clients-dashboard.sh root@192.168.8.1:/root/
-ssh root@192.168.8.1 "sh /root/vlan-clients-dashboard.sh"
+ssh root@192.168.8.1 "chmod +x /root/vlan-clients-dashboard.sh && /root/vlan-clients-dashboard.sh"
 ```
 
 Then open LuCI - **Network - VLAN Clients**.
