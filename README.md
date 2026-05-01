@@ -1,60 +1,34 @@
-# LuCI VLAN Clients Dashboard
+# GL.iNet Flint 2 — VLAN Tools
 
-> **Disclaimer:** This script was developed with the assistance of AI. It has been tested on the hardware listed below, but use it at your own risk. **Always take a backup before making any changes to your router.**
+A collection of shell scripts for setting up and managing VLANs on the **GL.iNet Flint 2 (MT6000)** running stock GL.iNet firmware (4.8.x / OpenWrt 21.02-SNAPSHOT) with DSA networking.
 
-A modern JavaScript LuCI view for **GL.iNet Flint 2 (MT6000)** that shows all connected clients grouped by VLAN interface.
-
-Tested on firmware **4.8.x** (OpenWrt 21.02-SNAPSHOT).
+> **Disclaimer:** These scripts were developed with the assistance of AI. They have been tested on the hardware listed above, but use them at your own risk. **Always take a backup before making any changes to your router.**
 
 ---
 
-## Features
+## Tools
 
-- Groups clients by VLAN with collapsible sections
-- Shows friendly VLAN names (e.g. `iot` instead of `br-lan.20`)
-- Filter pills to show/hide individual VLANs
-- Search by hostname, IP, MAC, or custom label
-- Per-device custom labels stored in `/etc/vlan-client-labels`
-- Sortable columns (IP, MAC, hostname)
-- Collapse state persisted across page loads
+### [vlan-wizard](vlan-wizard/README.md)
+An interactive command-line wizard for creating, listing, and removing VLANs. Handles everything automatically — bridge config, network interfaces, DHCP, firewall zones, and Wi-Fi SSIDs. Backs up your config before every change and includes a one-command rollback.
+
+### [vlan-dashboard](vlan-dashboard/README.md)
+A LuCI view that shows all connected clients grouped by VLAN. Installed directly into the GL.iNet web interface under **Network → VLAN Clients**. Supports filtering, search, sortable columns, and custom device labels.
 
 ---
 
-## Installation
+## Compatibility
 
-Copy `vlan-clients-dashboard.sh` to the router and run it:
-
-```sh
-scp vlan-clients-dashboard.sh root@192.168.8.1:/root/
-ssh root@192.168.8.1 "sh /root/vlan-clients-dashboard.sh"
-```
-
-Then open LuCI - **Network - VLAN Clients**.
-
-> Log out and back in if the menu item does not appear.
+| Hardware | GL.iNet Flint 2 (MT6000) |
+|---|---|
+| Firmware | GL.iNet 4.8.x |
+| OpenWrt base | 21.02-SNAPSHOT |
+| Networking | DSA (Distributed Switch Architecture) |
 
 ---
 
-## Files installed
+## Recommended workflow
 
-| Path | Description |
-|------|-------------|
-| `/www/luci-static/resources/view/vlan-clients.js` | The view |
-| `/usr/share/luci/menu.d/luci-app-vlan-clients.json` | Menu entry |
-| `/usr/share/rpcd/acl.d/luci-app-vlan-clients.json` | RPC permissions |
-| `/etc/vlan-client-labels` | Custom device labels |
+1. Use **vlan-wizard** to create your VLANs and assign SSIDs
+2. Install **vlan-dashboard** to monitor which clients are on which VLAN
 
----
-
-## Backup
-
-By default, LuCI and GL.iNet backups only include UCI config files. Run this once on the router to add the dashboard files to the backup list - after that they are automatically included every time you create a backup:
-    
-```sh
-cat >> /etc/sysupgrade.conf << 'EOF'
-/etc/vlan-client-labels
-/www/luci-static/resources/view/vlan-clients.js
-/usr/share/luci/menu.d/luci-app-vlan-clients.json
-/usr/share/rpcd/acl.d/luci-app-vlan-clients.json
-EOF
-```
+Both tools are independent — you can use either one on its own.
